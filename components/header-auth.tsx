@@ -52,19 +52,27 @@ export default async function AuthButton() {
     <div className="flex items-center gap-4">
       Hey, {user.email}!
       <form action={signOutAction}>
-        <Button type="submit" variant={"outline"}>
-          Sign out
-        </Button>
+        <button className="group bg-white relative inline-block text-sm font-medium text-black focus:outline-none rounded-lg">
+          <span className="absolute inset-0 translate-x-1 translate-y-1 bg-black transition-transform group-hover:translate-x-0 group-hover:translate-y-0 rounded-lg"></span>
+          <span className="relative text-base font-semibold block border border-current bg-primary px-8 py-3 rounded-lg">
+            {" "}
+            Sign out
+          </span>
+        </button>{" "}
       </form>
     </div>
   ) : (
     <div className="flex gap-2">
-      <Button asChild size="sm" variant={"outline"}>
-        <Link href="/sign-in">Sign in</Link>
-      </Button>
-      <Button asChild size="sm" variant={"default"}>
-        <Link href="/sign-up">Sign up</Link>
-      </Button>
+      <Link
+        href="/sign-in"
+        className="group bg-white relative inline-block text-sm font-medium text-black focus:outline-none rounded-lg"
+      >
+        <span className="absolute inset-0 translate-x-1 translate-y-1 bg-black transition-transform group-hover:translate-x-0 group-hover:translate-y-0 rounded-lg"></span>
+        <span className="relative text-base font-semibold block border border-current bg-primary px-8 py-3 rounded-lg">
+          {" "}
+          Login
+        </span>
+      </Link>{" "}
     </div>
   );
 }
