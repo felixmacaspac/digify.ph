@@ -8,6 +8,12 @@ import { redirect } from "next/navigation";
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
+  const first_name = formData.get("first_name")?.toString();
+  const last_name = formData.get("last_name")?.toString();
+  const street = formData.get("street")?.toString();
+  const city = formData.get("city")?.toString();
+  const state = formData.get("state")?.toString();
+  const zip = formData.get("zip")?.toString();
   const supabase = await createClient();
   const origin = (await headers()).get("origin");
 
@@ -19,7 +25,7 @@ export const signUpAction = async (formData: FormData) => {
     );
   }
 
-  const { error } = await supabase.auth.signUp({
+  const { data: data, error: error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -30,13 +36,34 @@ export const signUpAction = async (formData: FormData) => {
   if (error) {
     console.error(error.code + " " + error.message);
     return encodedRedirect("error", "/sign-up", error.message);
-  } else {
+  }
+
+  const userId = data?.user?.id; // Get the user ID of the newly created user
+  if (!userId) {
     return encodedRedirect(
-      "success",
+      "error",
       "/sign-up",
-      "Thanks for signing up! Please check your email for a verification link.",
+      "Could not retrieve the user ID"
     );
   }
+
+    // Insert a new row into the "customers" table
+    const { error: insertError } = await supabase.from("customers").insert({
+      customer_id: userId,
+      first_name,
+      last_name,
+      street,
+      city,
+      state,
+      zip,
+    });
+  
+    if (insertError) {
+      return encodedRedirect("error", "/sign-up", insertError.message);
+    }
+  
+    // Redirect to a success page or other destination
+    return encodedRedirect("success","/sign-up","Thanks for signing up! Please check your email for a verification link.",);
 };
 
 export const signInAction = async (formData: FormData) => {

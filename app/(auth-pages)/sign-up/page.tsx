@@ -38,6 +38,54 @@ export default async function Signup(props: {
             minLength={6}
             required
           />
+          <Label htmlFor="first_name">First Name</Label>
+          <Input
+            type="text"
+            name="first_name"
+            placeholder="(ex. John)"
+            minLength={1}
+            required
+          />
+          <Label htmlFor="last_name">Last Name</Label>
+          <Input
+            type="text"
+            name="last_name"
+            placeholder="(ex. Smith)"
+            minLength={1}
+            required
+          />
+          <Label htmlFor="street">Street</Label>
+          <Input
+            type="text"
+            name="street"
+            placeholder="(ex. Westgrove St.)"
+            minLength={6}
+            required
+          />
+          <Label htmlFor="city">City</Label>
+          <Input
+            type="text"
+            name="city"
+            placeholder="(ex. New York City)"
+            minLength={6}
+            required
+          />
+          <Label htmlFor="state">State</Label>
+          <Input
+            type="text"
+            name="state"
+            placeholder="(ex. Alabama)"
+            minLength={6}
+            required
+          />
+          <Label htmlFor="zip">Zip Code</Label>
+          <Input
+            type="number"
+            name="zip"
+            placeholder="(ex. 1234)"
+            minLength={1}
+            required
+          />
           <SubmitButton formAction={signUpAction} pendingText="Signing up...">
             Sign up
           </SubmitButton>
