@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import { BrandsCharts } from "@/components/brands-chart";
+import CameraBrandsChart from "@/components/camera-brands-chart";
+import UserGrowthChart from "@/components/users-chart";
 
 const sidebarItems = [
   {
@@ -52,8 +53,8 @@ const AdminDashboard = () => {
         </nav>
       </div>
 
-      <div className="flex-1 p-8 bg-black rounded-3xl grid grid-cols-2">
-        <BrandsCharts />
+      <div className="flex-1 p-8 bg-black rounded-3xl grid gap-4">
+        <CameraBrandsChart />
       </div>
     </div>
   );
