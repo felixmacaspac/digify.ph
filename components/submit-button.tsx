@@ -17,7 +17,7 @@ export function SubmitButton({
 
   return (
     <Button
-      className="py-6 text-base font-semibold"
+      className="py-6 text-base font-semibold bg-secondary border-black border rounded-sm uppercase"
       type="submit"
       aria-disabled={pending}
       {...props}

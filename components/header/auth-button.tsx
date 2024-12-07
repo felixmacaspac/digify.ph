@@ -46,7 +46,7 @@ export default async function AuthButton() {
       >
         Log in
       </Link>{" "}
-      <Link className="flex items-center pl-10 h-full" href="/sign-in">
+      <Link className="flex items-center pl-10 h-full" href="/sign-up">
         Sign up
       </Link>{" "}
     </div>

@@ -23,6 +23,8 @@ const config = {
         secondary: "#FCFAEE",
         blue: "#2848B7",
         green: "#63CC63",
+        purple: "#D0CFFF",
+        pink: "#FFC7EF",
         black: "#322F2A",
       },
     },
