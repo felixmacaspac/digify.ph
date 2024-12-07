@@ -93,12 +93,23 @@ export const getUserName = async (customer_id: string) => {
     .single(); // single() to ensure only one record is fetched
 
   if (queryError) {
-    console.error('Error fetching username:', queryError.message);
-    return 'Error fetching username:'+ queryError.message
+    console.log('Error fetching username:'+ queryError.message)
   } else {
     return `${customerData.first_name} ${customerData.last_name}`
   }
 }
+
+export const isLoggedIn = async () => {
+  const supabase = await createClient();
+  const { data: userData, error } = await supabase.auth.getUser();
+
+  if (error) {
+    console.log('Error checking user authentication:'+  error.message);
+    return false;
+  }
+
+  return !!userData?.user; // Returns true if a user object exists
+};
 
 export const forgotPasswordAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();

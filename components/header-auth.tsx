@@ -1,4 +1,4 @@
-import { signOutAction, getUserName } from "@/app/actions";
+import { signOutAction, getUserName, isLoggedIn } from "@/app/actions";
 import { hasEnvVars } from "@/utils/supabase/check-env-vars";
 import Link from "next/link";
 import { Badge } from "./ui/badge";
@@ -14,7 +14,7 @@ export default async function AuthButton() {
   let fullname = "";
 
   if (authError) {
-    console.error('Error fetching user:', authError.message);
+    console.log('Error fetching user:', authError.message);
   } else {
     const userId = user.user.id;
   
@@ -58,7 +58,7 @@ export default async function AuthButton() {
       </>
     );
   }
-  return fullname ? (
+  return await isLoggedIn() ? (
     <div className="flex items-center gap-4">
       Hey, {fullname}!
       <form action={signOutAction}>
