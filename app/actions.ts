@@ -83,6 +83,23 @@ export const signInAction = async (formData: FormData) => {
   return redirect("/protected");
 };
 
+export const getUserName = async (customer_id: string) => {
+  const supabase = await createClient();
+  // Query the customers table for the username
+  const { data: customerData, error: queryError } = await supabase
+    .from('customers')
+    .select('first_name, last_name') // Adjust to match your column name
+    .eq('customer_id', customer_id)
+    .single(); // single() to ensure only one record is fetched
+
+  if (queryError) {
+    console.error('Error fetching username:', queryError.message);
+    return 'Error fetching username:'+ queryError.message
+  } else {
+    return `${customerData.first_name} ${customerData.last_name}`
+  }
+}
+
 export const forgotPasswordAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const supabase = await createClient();
