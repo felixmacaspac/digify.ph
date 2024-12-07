@@ -1,10 +1,10 @@
-import { Poppins } from "next/font/google";
+import { Mulish } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/header";
+import Header from "@/components/header/menu";
+import Hero from "@/components/hero";
 
-const poppins = Poppins({
+const mulish = Mulish({
   subsets: ["latin"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
 const defaultUrl = process.env.VERCEL_URL
@@ -13,7 +13,7 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
+  title: "digify.ph",
   description: "The fastest way to build apps with Next.js and Supabase",
 };
 
@@ -23,9 +23,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={poppins.className} suppressHydrationWarning>
+    <html lang="en" className={mulish.className} suppressHydrationWarning>
       <body>
-        <main className="min-h-screen flex flex-col items-center">
+        <main>
           <Header />
           {children}
         </main>

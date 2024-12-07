@@ -14,13 +14,13 @@ const config = {
       center: true,
       padding: "2rem",
       screens: {
-        "2xl": "1024px",
+        DEFAULT: "1440px",
       },
     },
     extend: {
       colors: {
-        primary: "#F7CB46",
-        secondary: "#FCF4E7",
+        primary: "#BDE8CA",
+        secondary: "#FCFAEE",
         blue: "#2848B7",
         green: "#63CC63",
         black: "#322F2A",
