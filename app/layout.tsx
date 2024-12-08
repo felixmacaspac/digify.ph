@@ -1,7 +1,6 @@
 import { Mulish } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/header/menu";
-import Hero from "@/components/hero";
 import Footer from "@/components/footer";
 
 const mulish = Mulish({
