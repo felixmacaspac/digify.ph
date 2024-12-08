@@ -2,6 +2,7 @@ import { Mulish } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/header/menu";
 import Hero from "@/components/hero";
+import Footer from "@/components/footer";
 
 const mulish = Mulish({
   subsets: ["latin"],
@@ -25,10 +26,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={mulish.className} suppressHydrationWarning>
       <body>
-        <main>
-          <Header />
-          {children}
-        </main>
+        <Header />
+        {children}
+        <Footer />
       </body>
     </html>
   );

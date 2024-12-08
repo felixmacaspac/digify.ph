@@ -13,17 +13,22 @@ export default async function ForgotPassword(props: {
     <>
       <form className="flex-1 flex flex-col my-40 w-full max-w-lg mx-auto">
         <div>
-          <h1 className="text-2xl font-medium">Reset Password</h1>
-          <p className="text-sm text-secondary-foreground">
+          <h1 className="text-4xl text-center uppercase font-bold">
+            Reset Password
+          </h1>
+          <p className="text-base italic text-center text-black">
             Already have an account?{" "}
-            <Link className="text-primary underline" href="/sign-in">
+            <Link
+              className="text-black font-semibold underline uppercase"
+              href="/sign-in"
+            >
               Sign in
             </Link>
           </p>
         </div>
-        <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8">
-          <Label htmlFor="email">Email</Label>
-          <Input name="email" placeholder="you@example.com" required />
+        <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8 text-black">
+          <Label htmlFor="email">EMAIL</Label>
+          <Input name="email" placeholder="YOU@EXAMPLE.COM" required />
           <SubmitButton formAction={forgotPasswordAction}>
             Reset Password
           </SubmitButton>

@@ -6,6 +6,7 @@ export default async function Index() {
     <>
       <main>
         <Hero />
+        <FeaturesGrid />
       </main>
     </>
   );

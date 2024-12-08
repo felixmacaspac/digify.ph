@@ -20,21 +20,24 @@ export default async function Signup(props: {
   return (
     <>
       <form className="flex-1 flex flex-col my-40 w-full max-w-lg mx-auto">
-        <h1 className="text-2xl font-medium">Sign up</h1>
-        <p className="text-sm text text-foreground">
+        <h1 className="text-4xl text-center uppercase font-bold">Sign up</h1>
+        <p className="text-base italic text-center text-black">
           Already have an account?{" "}
-          <Link className="text-primary font-medium underline" href="/sign-in">
+          <Link
+            className="text-black font-semibold underline uppercase"
+            href="/sign-in"
+          >
             Sign in
           </Link>
         </p>
-        <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8">
+        <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8 uppercase text-black">
           <Label htmlFor="email">Email</Label>
-          <Input name="email" placeholder="you@example.com" required />
+          <Input name="email" placeholder="YOU@EXAMPLE.COM" required />
           <Label htmlFor="password">Password</Label>
           <Input
             type="password"
             name="password"
-            placeholder="Your password"
+            placeholder="YOUR PASSWORD"
             minLength={6}
             required
           />
@@ -42,7 +45,7 @@ export default async function Signup(props: {
           <Input
             type="text"
             name="first_name"
-            placeholder="(ex. John)"
+            placeholder="(EX. JUAN)"
             minLength={1}
             required
           />
@@ -50,7 +53,7 @@ export default async function Signup(props: {
           <Input
             type="text"
             name="last_name"
-            placeholder="(ex. Smith)"
+            placeholder="(EX. DELA CRUZ)"
             minLength={1}
             required
           />
@@ -58,7 +61,7 @@ export default async function Signup(props: {
           <Input
             type="text"
             name="street"
-            placeholder="(ex. Westgrove St.)"
+            placeholder="(EX. 1234 EXAMPLE ST)"
             minLength={6}
             required
           />
@@ -66,15 +69,15 @@ export default async function Signup(props: {
           <Input
             type="text"
             name="city"
-            placeholder="(ex. New York City)"
+            placeholder="(EX. IMUS CAVITE)"
             minLength={6}
             required
           />
-          <Label htmlFor="state">State</Label>
+          <Label htmlFor="province">Province</Label>
           <Input
             type="text"
-            name="state"
-            placeholder="(ex. Alabama)"
+            name="province"
+            placeholder="(EX. CAVITE)"
             minLength={6}
             required
           />
@@ -82,7 +85,7 @@ export default async function Signup(props: {
           <Input
             type="number"
             name="zip"
-            placeholder="(ex. 1234)"
+            placeholder="(EX. 4103)"
             minLength={1}
             required
           />
