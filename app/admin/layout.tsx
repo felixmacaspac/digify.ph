@@ -13,7 +13,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
 
   return (
-    <div className="bg-secondary border">
+    <div className="bg-white">
       <div className="flex border-black border-l max-w-[1440px] mx-auto min-h-screen">
         <aside className="max-w-64 w-full border-r border-r-black pt-10">
           <nav>

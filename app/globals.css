@@ -3,6 +3,11 @@
 @tailwind utilities;
 
 @layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: initial;
+  }
   body {
     font-family: "Kanit", sans-serif;
     font-style: normal;
