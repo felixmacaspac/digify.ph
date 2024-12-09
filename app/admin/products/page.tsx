@@ -1,11 +1,18 @@
 import ProductsCrud from "@/components/admin/products-crud";
+import { createClient } from "@/utils/supabase/server";
 
-const Products = () => {
-  return (
-    <div>
-      <ProductsCrud />
-    </div>
-  );
-};
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: { message?: string; type?: string };
+}) {
+  const supabase = await createClient();
 
-export default Products;
+  const { data: products, error } = await supabase.from("products").select("*");
+
+  if (error) {
+    console.error("Error fetching products:", error);
+  }
+
+  return <ProductsCrud products={products || []} searchParams={searchParams} />;
+}

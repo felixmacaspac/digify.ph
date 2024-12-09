@@ -1,15 +1,11 @@
 "use client";
-import React, { useState, ChangeEvent, FormEvent } from "react";
-import { PlusCircle, Pencil, Trash2, Search } from "lucide-react";
-import Link from "next/link";
-
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Table,
@@ -21,309 +17,266 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FormField, FormControl, FormLabel } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { SubmitButton } from "@/components/submit-button";
+import { FormMessage, Message } from "@/components/form-message";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlusCircle, Pencil, Trash2 } from "lucide-react";
+import { newProductAction } from "@/app/actions";
 
-interface Product {
-  id: string;
-  name: string;
-  brand: string;
-  category: string;
-  price: number;
-  stock: number;
-  description: string;
-}
+const ProductsCrud = ({
+  searchParams,
+  products = [],
+}: {
+  searchParams: Message;
+  products: Array<{
+    id: string;
+    product_code: string;
+    brand: string;
+    megapixels: number;
+    sensor_size: string;
+    sensor_type: string;
+    price: number;
+    stocks: number;
+    product_image: string;
+  }>;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
 
-interface FormData {
-  name: string;
-  brand: string;
-  category: string;
-  price: number;
-  stock: number;
-  description: string;
-}
-
-const initialProducts: Product[] = [
-  {
-    id: "1",
-    name: "Canon EOS R5",
-    brand: "Canon",
-    category: "Mirrorless",
-    price: 3899.99,
-    stock: 15,
-    description: "45MP Full-Frame Mirrorless Camera",
-  },
-];
-
-export function ProductsCrud() {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
-  const [isFormDialogOpen, setIsFormDialogOpen] = useState<boolean>(false);
-
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    brand: "",
-    category: "DSLR",
-    price: 0,
-    stock: 0,
-    description: "",
-  });
-
-  const handleSearch = (event: ChangeEvent<HTMLInputElement>) =>
-    setSearchTerm(event.target.value);
-
-  const filteredProducts = products.filter(
-    (product) =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.brand.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const handleCreate = () => {
-    setSelectedProduct(null);
-    setFormData({
-      name: "",
-      brand: "",
-      category: "DSLR",
-      price: 0,
-      stock: 0,
-      description: "",
-    });
-    setIsFormDialogOpen(true);
+  const handleAddNewProduct = () => {
+    setIsOpen(true);
+    setEditingProduct(null);
   };
 
-  const handleEdit = (product: Product) => {
-    setSelectedProduct(product);
-    setFormData(product);
-    setIsFormDialogOpen(true);
-  };
-
-  const handleDelete = (product: Product) => {
-    setSelectedProduct(product);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const confirmDelete = () => {
-    if (selectedProduct) {
-      setProducts(products.filter((p) => p.id !== selectedProduct.id));
-      setSelectedProduct(null);
-    }
-    setIsDeleteDialogOpen(false);
-  };
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (selectedProduct) {
-      setProducts(
-        products.map((p) =>
-          p.id === selectedProduct.id ? { ...formData, id: p.id } : p
-        )
-      );
-    } else {
-      setProducts([...products, { ...formData, id: Date.now().toString() }]);
-    }
-    setIsFormDialogOpen(false);
-  };
-
-  const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleEdit = (product) => {
+    setEditingProduct(product);
+    setIsOpen(true);
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Camera Products Management</h1>
-        <Link href="/admin/products/new">
-          Add Product Form
-        </Link>
-        <Button onClick={handleCreate}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add New Product
-        </Button>
-
-        
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Search className="h-4 w-4 text-gray-400" />
-        <Input
-          placeholder="Search products..."
-          value={searchTerm}
-          onChange={handleSearch}
-          className="max-w-sm"
-        />
-      </div>
-
-      <div className="border rounded-lg">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Brand</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Stock</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredProducts.map((product) => (
-              <TableRow key={product.id}>
-                <TableCell>{product.name}</TableCell>
-                <TableCell>{product.brand}</TableCell>
-                <TableCell>{product.category}</TableCell>
-                <TableCell>${product.price.toFixed(2)}</TableCell>
-                <TableCell>{product.stock}</TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(product)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-red-600"
-                      onClick={() => handleDelete(product)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      <Dialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {selectedProduct ? "Edit Product" : "Add New Product"}
-            </DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <FormField>
-              <FormLabel>Product Name</FormLabel>
-              <FormControl>
-                <Input
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                />
-              </FormControl>
-            </FormField>
-            <FormField>
-              <FormLabel>Brand</FormLabel>
-              <FormControl>
-                <Input
-                  name="brand"
-                  value={formData.brand}
-                  ange={handleInputChange}
-                  required
-                />
-              </FormControl>
-            </FormField>
-            <FormField>
-              <FormLabel>Category</FormLabel>
-              <Select
-                name="category"
-                value={formData.category}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, category: value }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="DSLR">DSLR</SelectItem>
-                    <SelectItem value="Mirrorless">Mirrorless</SelectItem>
-                    <SelectItem value="Compact">Compact</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </FormField>
-            <FormField>
-              <FormLabel>Price</FormLabel>
-              <FormControl>
-                <Input
-                  name="price"
-                  type="number"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  required
-                />
-              </FormControl>
-            </FormField>
-            <FormField>
-              <FormLabel>Stock</FormLabel>
-              <FormControl>
-                <Input
-                  name="stock"
-                  type="number"
-                  value={formData.stock}
-                  onChange={handleInputChange}
-                  required
-                />
-              </FormControl>
-            </FormField>
-            <FormField>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Input
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  required
-                />
-              </FormControl>
-            </FormField>
-            <DialogFooter>
-              <Button type="submit">Save</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Product</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete {selectedProduct?.name}?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={confirmDelete}>
-              Delete
+    <div className="container mx-auto py-10">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Products</h1>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger asChild>
+            <Button
+              className="gap-2"
+              onClick={handleAddNewProduct}
+              className="bg-black text-white font-bold uppercase hover:bg-black hover:text-white"
+            >
+              <PlusCircle className="w-4 h-4 mr-2" />
+              Add Product
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl bg-secondary text-black max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {editingProduct ? "Edit Product" : "Add New Product"}
+              </DialogTitle>
+            </DialogHeader>
+            <form action={newProductAction} className="flex flex-col gap-6">
+              <div className="grid grid-cols-2 gap-4">
+                {/* Image Preview Section */}
+                <div className="col-span-2 space-y-2 grid grid-cols-1 gap-4">
+                  {/* Show the current image if editingProduct has a product_image */}
+                  {editingProduct?.product_image && (
+                    <div>
+                      <img
+                        src={editingProduct.product_image}
+                        alt="Current Product"
+                        className="w-40 h-40 mx-auto object-cover rounded border border-gray-200"
+                      />
+                    </div>
+                  )}
+                  {/* File input */}
+                  <Input
+                    type="file"
+                    id="product_image"
+                    name="product_image"
+                    accept=".png, .jpeg, .jpg"
+                    required={!editingProduct}
+                    className="file:mr-4 file:bg-black file:text-white file:py-2 file:px-4 file:!border-0 file:text-sm file:font-semibold !outline-1"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="product_code" className="uppercase">
+                    Product Code:
+                  </Label>
+                  <Input
+                    type="text"
+                    id="product_code"
+                    name="product_code"
+                    required
+                    defaultValue={editingProduct?.product_code}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="brand" className="uppercase">
+                    Brand:
+                  </Label>
+                  <Input
+                    type="text"
+                    id="brand"
+                    name="brand"
+                    required
+                    defaultValue={editingProduct?.brand}
+                  />
+                </div>
+
+                {/* Other input fields */}
+                <div className="space-y-2">
+                  <Label htmlFor="megapixels" className="uppercase">
+                    Effective Pixels:
+                  </Label>
+                  <Input
+                    type="number"
+                    id="megapixels"
+                    name="megapixels"
+                    required
+                    step="0.1"
+                    defaultValue={editingProduct?.megapixels}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sensor_size" className="uppercase">
+                    Sensor Size:
+                  </Label>
+                  <Input
+                    type="text"
+                    id="sensor_size"
+                    name="sensor_size"
+                    required
+                    defaultValue={editingProduct?.sensor_size}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sensor_type" className="uppercase">
+                    Sensor Type:
+                  </Label>
+                  <Input
+                    type="text"
+                    id="sensor_type"
+                    name="sensor_type"
+                    required
+                    defaultValue={editingProduct?.sensor_type}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="price" className="uppercase">
+                    Price:
+                  </Label>
+                  <Input
+                    type="number"
+                    id="price"
+                    name="price"
+                    min={0}
+                    step="0.01"
+                    required
+                    defaultValue={editingProduct?.price}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="stocks" className="uppercase">
+                    Stocks:
+                  </Label>
+                  <Input
+                    type="number"
+                    id="stocks"
+                    name="stocks"
+                    min={0}
+                    required
+                    defaultValue={editingProduct?.stocks}
+                  />
+                </div>
+              </div>
+
+              <SubmitButton
+                pendingText={editingProduct ? "Updating..." : "Adding..."}
+                className="w-full font-bold text-white uppercase !bg-black"
+              >
+                {editingProduct ? "Update Product" : "Add Product"}
+              </SubmitButton>
+
+              {searchParams && <FormMessage message={searchParams} />}
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Image</TableHead>
+                <TableHead>Product Code</TableHead>
+                <TableHead>Brand</TableHead>
+                <TableHead>Megapixels</TableHead>
+                <TableHead>Sensor Size</TableHead>
+                <TableHead>Sensor Type</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Stocks</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {products.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={9}>No products available</TableCell>
+                </TableRow>
+              ) : (
+                products.map((product, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <img
+                        src={product.product_image || "/default-image.png"}
+                        alt={product.product_code || "No Image"}
+                        className="w-16 h-16 object-cover rounded"
+                      />
+                    </TableCell>
+                    <TableCell>{product.product_code}</TableCell>
+                    <TableCell>{product.brand}</TableCell>
+                    <TableCell>{product.megapixels}</TableCell>
+                    <TableCell>{product.sensor_size}</TableCell>
+                    <TableCell>{product.sensor_type}</TableCell>
+                    <TableCell>
+                      ${parseFloat(product.price || "0").toFixed(2)}
+                    </TableCell>
+                    <TableCell>{product.stocks}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEdit(product)}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
-}
+};
 
 export default ProductsCrud;

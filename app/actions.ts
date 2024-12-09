@@ -7,78 +7,72 @@ import { redirect } from "next/navigation";
 
 export const newProductAction = async (formData: FormData) => {
   const supabase = await createClient();
-  //Handle File Upload
-
   const product_image = formData.get("product_image") as File;
 
   if (!product_image) {
     return encodedRedirect(
       "error",
-      "/admin/products/new",
+      "/admin/products",
       `Please upload an Image`
     );
   }
 
-    // Validate file type
-    const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
-    if (!allowedTypes.includes(product_image.type)) {
-      return encodedRedirect(
-        "error",
-        "/admin/products/new",
-        "Invalid file type. Only .png, .jpeg, or .jpg images are allowed."
-      );
-    }
+  // Validate file type
+  const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
+  if (!allowedTypes.includes(product_image.type)) {
+    return encodedRedirect(
+      "error",
+      "/admin/products",
+      "Invalid file type. Only .png, .jpeg, or .jpg images are allowed."
+    );
+  }
 
-    // Upload image to Supabase storage bucket
+  // Upload image to Supabase storage bucket
   const { data: uploadData, error: uploadError } = await supabase.storage
-  .from("products")
-  .upload(`images/${Date.now()}_${product_image.name}`, product_image);
+    .from("products")
+    .upload(`images/${Date.now()}_${product_image.name}`, product_image);
 
   if (uploadError) {
     return encodedRedirect(
       "error",
-      "/admin/products/new",
+      "/admin/products",
       `Image upload failed: ${uploadError.message}`
     );
   }
 
   const { data: publicURLData } = supabase.storage
-  .from("products")
-  .getPublicUrl(uploadData.path);
+    .from("products")
+    .getPublicUrl(uploadData.path);
 
   if (!publicURLData) {
     return encodedRedirect(
       "error",
-      "/admin/products/new",
+      "/admin/products",
       "Failed to get the image URL."
     );
   }
 
-    // List of all required fields
-    const requiredFields = [
-      "product_code",
-      "brand",
-      "megapixels",
-      "sensor_size",
-      "sensor_type",
-      "price",
-      "stocks",
-    ];
-  
-    // Validate that all required fields are present and not empty
-    const missingFields = requiredFields.filter(
-      (field) => !formData.get(field)?.toString().trim()
+  const requiredFields = [
+    "product_code",
+    "brand",
+    "megapixels",
+    "sensor_size",
+    "sensor_type",
+    "price",
+    "stocks",
+  ];
+
+  const missingFields = requiredFields.filter(
+    (field) => !formData.get(field)?.toString().trim()
+  );
+
+  if (missingFields.length > 0) {
+    return encodedRedirect(
+      "error",
+      "/admin/products",
+      `Required fields are missing: ${missingFields.join(", ")}`
     );
-  
-    if (missingFields.length > 0) {
-      return encodedRedirect(
-        "error",
-        "/admin/products/new",
-        `Required fields are missing: ${missingFields.join(", ")}`
-      );
-    }
-
-
+  }
 
   const product_code = formData.get("product_code")?.toString();
   const brand = formData.get("brand")?.toString();
@@ -88,37 +82,33 @@ export const newProductAction = async (formData: FormData) => {
   const price = formData.get("price")?.toString();
   const stocks = formData.get("stocks")?.toString();
 
-  console.log(publicURLData);
-
   const { data, error } = await supabase.from("products").insert([
     {
-      "product_code": product_code,
-      "brand": brand,
-      "megapixels": megapixels,
-      "sensor_size": sensor_size,
-      "sensor_type": sensor_type,
-      "price": price,
-      "stocks": stocks,
-      "product_image": publicURLData.publicUrl
+      product_code: product_code,
+      brand: brand,
+      megapixels: megapixels,
+      sensor_size: sensor_size,
+      sensor_type: sensor_type,
+      price: price,
+      stocks: stocks,
+      product_image: publicURLData.publicUrl,
     },
   ]);
-
 
   if (error) {
     return encodedRedirect(
       "error",
-      "/admin/products/new",
+      "/admin/products",
       `Failed to insert product into the database. ${error.message}`
     );
   }
 
   return encodedRedirect(
     "success",
-    "/admin/products/new",
-    "Added new product"
+    "/admin/products",
+    "Added new product successfully."
   );
-}
-
+};
 
 // Sign up action
 export const signUpAction = async (formData: FormData) => {
