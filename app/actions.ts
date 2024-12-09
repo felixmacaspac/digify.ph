@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+// Sign up action
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
@@ -25,7 +26,7 @@ export const signUpAction = async (formData: FormData) => {
     );
   }
 
-  const { data: data, error: error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -38,7 +39,7 @@ export const signUpAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-up", error.message);
   }
 
-  const userId = data?.user?.id; // Get the user ID of the newly created user
+  const userId = data?.user?.id;
   if (!userId) {
     return encodedRedirect(
       "error",
@@ -47,7 +48,6 @@ export const signUpAction = async (formData: FormData) => {
     );
   }
 
-  // Insert a new row into the "customers" table
   const { error: insertError } = await supabase.from("customers").insert({
     customer_id: userId,
     first_name,
@@ -62,7 +62,6 @@ export const signUpAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-up", insertError.message);
   }
 
-  // Redirect to a success page or other destination
   return encodedRedirect(
     "success",
     "/sign-up",
@@ -70,6 +69,7 @@ export const signUpAction = async (formData: FormData) => {
   );
 };
 
+// Sign in action
 export const signInAction = async (formData: FormData) => {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
@@ -84,37 +84,28 @@ export const signInAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
-  return redirect("/protected");
+  return redirect("/admin");
 };
 
-export const getUserName = async (customer_id: string) => {
+// Fetch customer full name based on customer_id
+export const getCustomerFullName = async (customer_id: string) => {
   const supabase = await createClient();
-  // Query the customers table for the username
+
   const { data: customerData, error: queryError } = await supabase
     .from("customers")
-    .select("first_name, last_name") // Adjust to match your column name
+    .select("first_name, last_name")
     .eq("customer_id", customer_id)
-    .single(); // single() to ensure only one record is fetched
+    .single();
 
   if (queryError) {
-    console.log("Error fetching username:" + queryError.message);
-  } else {
-    return `${customerData.first_name} ${customerData.last_name}`;
-  }
-};
-
-export const isLoggedIn = async () => {
-  const supabase = await createClient();
-  const { data: userData, error } = await supabase.auth.getUser();
-
-  if (error) {
-    console.log("Error checking user authentication:" + error.message);
-    return false;
+    console.log("Error fetching customer data:", queryError.message);
+    return "";
   }
 
-  return !!userData?.user; // Returns true if a user object exists
+  return `${customerData?.first_name} ${customerData?.last_name}` || "";
 };
 
+// Forgot password action
 export const forgotPasswordAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const supabase = await createClient();
@@ -149,6 +140,7 @@ export const forgotPasswordAction = async (formData: FormData) => {
   );
 };
 
+// Reset password action
 export const resetPasswordAction = async (formData: FormData) => {
   const supabase = await createClient();
 
@@ -186,6 +178,7 @@ export const resetPasswordAction = async (formData: FormData) => {
   encodedRedirect("success", "/protected/reset-password", "Password updated");
 };
 
+// Sign out action
 export const signOutAction = async () => {
   const supabase = await createClient();
   await supabase.auth.signOut();
