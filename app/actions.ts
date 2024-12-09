@@ -5,6 +5,72 @@ import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+export const newProductAction = async (formData: FormData) => {
+    // List of all required fields
+    const requiredFields = [
+      "product_code",
+      "brand",
+      "megapixels",
+      "sensor_size",
+      "sensor_type",
+      "price",
+      "stocks",
+    ];
+  
+    // Validate that all required fields are present and not empty
+    const missingFields = requiredFields.filter(
+      (field) => !formData.get(field)?.toString().trim()
+    );
+  
+    if (missingFields.length > 0) {
+      return encodedRedirect(
+        "error",
+        "/admin/products/new",
+        `Required fields are missing: ${missingFields.join(", ")}`
+      );
+    }
+
+
+
+  const product_code = formData.get("product_code")?.toString();
+  const brand = formData.get("brand")?.toString();
+  const megapixels = formData.get("megapixels")?.toString();
+  const sensor_size = formData.get("sensor_size")?.toString();
+  const sensor_type = formData.get("sensor_type")?.toString();
+  const price = formData.get("price")?.toString();
+  const stocks = formData.get("stocks")?.toString();
+
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.from("products").insert([
+    {
+      "product_code": product_code,
+      "brand": brand,
+      "megapixels": megapixels,
+      "sensor_size": sensor_size,
+      "sensor_type": sensor_type,
+      "price": price,
+      "stocks": stocks,
+    },
+  ]);
+
+
+  if (error) {
+    return encodedRedirect(
+      "error",
+      "/admin/products/new",
+      `Failed to insert product into the database. ${error.message}`
+    );
+  }
+
+  return encodedRedirect(
+    "success",
+    "/admin/products/new",
+    "Added new product"
+  );
+}
+
+
 // Sign up action
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
