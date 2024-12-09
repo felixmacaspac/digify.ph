@@ -6,6 +6,54 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export const newProductAction = async (formData: FormData) => {
+  const supabase = await createClient();
+  //Handle File Upload
+
+  const product_image = formData.get("product_image") as File;
+
+  if (!product_image) {
+    return encodedRedirect(
+      "error",
+      "/admin/products/new",
+      `Please upload an Image`
+    );
+  }
+
+    // Validate file type
+    const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
+    if (!allowedTypes.includes(product_image.type)) {
+      return encodedRedirect(
+        "error",
+        "/admin/products/new",
+        "Invalid file type. Only .png, .jpeg, or .jpg images are allowed."
+      );
+    }
+
+    // Upload image to Supabase storage bucket
+  const { data: uploadData, error: uploadError } = await supabase.storage
+  .from("products")
+  .upload(`images/${Date.now()}_${product_image.name}`, product_image);
+
+  if (uploadError) {
+    return encodedRedirect(
+      "error",
+      "/admin/products/new",
+      `Image upload failed: ${uploadError.message}`
+    );
+  }
+
+  const { data: publicURLData } = supabase.storage
+  .from("products")
+  .getPublicUrl(uploadData.path);
+
+  if (!publicURLData) {
+    return encodedRedirect(
+      "error",
+      "/admin/products/new",
+      "Failed to get the image URL."
+    );
+  }
+
     // List of all required fields
     const requiredFields = [
       "product_code",
@@ -40,7 +88,7 @@ export const newProductAction = async (formData: FormData) => {
   const price = formData.get("price")?.toString();
   const stocks = formData.get("stocks")?.toString();
 
-  const supabase = await createClient();
+  console.log(publicURLData);
 
   const { data, error } = await supabase.from("products").insert([
     {
@@ -51,6 +99,7 @@ export const newProductAction = async (formData: FormData) => {
       "sensor_type": sensor_type,
       "price": price,
       "stocks": stocks,
+      "product_image": publicURLData.publicUrl
     },
   ]);
 

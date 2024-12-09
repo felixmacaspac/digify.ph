@@ -24,6 +24,16 @@ const NewProduct = async (props: {
 <form className="flex-1 flex flex-col my-40 w-full max-w-lg mx-auto">
         <h1 className="text-4xl text-center uppercase font-bold">New Product</h1>
         <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8 uppercase text-black">
+        <Label htmlFor="product_image">Product Image:</Label>
+          <Input
+            type="file"
+            id="product_image"
+            name="product_image"
+            accept=".png, .jpeg, .jpg"
+            required
+          />
+        </div>
+        <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8 uppercase text-black">
         <Label htmlFor="product_code">Product Code:</Label>
           <Input
             type="text"
@@ -32,7 +42,7 @@ const NewProduct = async (props: {
             required
           />
         </div>
-        <div>
+        <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8 uppercase text-black">
           <Label htmlFor="brand">Brand:</Label>
           <Input
             type="text"
@@ -41,7 +51,7 @@ const NewProduct = async (props: {
             required
           />
         </div>
-        <div>
+        <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8 uppercase text-black">
           <Label htmlFor="megapixels">Effective Pixels:</Label>
           <Input
             type="number"
@@ -50,7 +60,7 @@ const NewProduct = async (props: {
             required
           />
         </div>
-        <div>
+        <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8 uppercase text-black">
           <Label htmlFor="sensor_size">Sensor Size:</Label>
           <Input
             type="text"
@@ -59,7 +69,7 @@ const NewProduct = async (props: {
             required
           />
         </div>
-        <div>
+        <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8 uppercase text-black">
           <Label htmlFor="sensor_type">Sensor Type:</Label>
           <Input
             type="text"
@@ -68,7 +78,7 @@ const NewProduct = async (props: {
             required
           />
         </div>
-        <div>
+        <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8 uppercase text-black">
           <Label htmlFor="price">Price:</Label>
           <Input
             type="number"
@@ -79,7 +89,7 @@ const NewProduct = async (props: {
             step=".01"
           />
         </div>
-        <div>
+        <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8 uppercase text-black">
           <Label htmlFor="stocks">Stocks:</Label>
           <Input
             type="number"
