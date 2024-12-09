@@ -12,7 +12,10 @@ const AdminDashboard = () => {
     }
   }, [pathname, navigate]);
 
-  return <div>admin</div>;
+  return (<div>
+    admin
+    </div>)
+  ;
 };
 
 export default AdminDashboard;

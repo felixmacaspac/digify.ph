@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation";
+import sharp from 'sharp';
+import { promises as fs } from 'fs';
 
 /**
  * Redirects to a specified path with an encoded message as a query parameter.
