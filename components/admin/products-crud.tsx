@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import { PlusCircle, Pencil, Trash2, Search } from "lucide-react";
+import Link from "next/link";
 
 import {
   Dialog,
@@ -146,10 +147,15 @@ export function ProductsCrud() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Camera Products Management</h1>
+        <Link href="/admin/products/new">
+          Add Product Form
+        </Link>
         <Button onClick={handleCreate}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Add New Product
         </Button>
+
+        
       </div>
 
       <div className="flex items-center space-x-2">
