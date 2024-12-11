@@ -22,7 +22,7 @@ import { SubmitButton } from "@/components/submit-button";
 import { FormMessage, Message } from "@/components/form-message";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
-import { newProductAction } from "@/app/actions";
+import { newProductAction, deleteProductAction } from "@/app/actions";
 
 const ProductsCrud = ({
   searchParams,
@@ -30,7 +30,7 @@ const ProductsCrud = ({
 }: {
   searchParams: Message;
   products: Array<{
-    id: string;
+    product_id: string;
     product_code: string;
     brand: string;
     megapixels: number;
@@ -52,6 +52,10 @@ const ProductsCrud = ({
   const handleEdit = (product) => {
     setEditingProduct(product);
     setIsOpen(true);
+  };
+
+  const handleDelete = (product) => {
+    console.log(product.product_id);
   };
 
   return (
@@ -259,13 +263,17 @@ const ProductsCrud = ({
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <form>
+                          <SubmitButton
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-500 hover:text-red-700"
+                            formAction={() => deleteProductAction(product.product_id)}
+                            pendingText="Deleting..."
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </SubmitButton>
+                        </form>
                       </div>
                     </TableCell>
                   </TableRow>
