@@ -22,7 +22,7 @@ import { SubmitButton } from "@/components/submit-button";
 import { FormMessage, Message } from "@/components/form-message";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
-import { newProductAction, deleteProductAction } from "@/app/actions";
+import { newProductAction, deleteProductAction, updateProductAction } from "@/app/actions";
 
 const ProductsCrud = ({
   searchParams,
@@ -54,10 +54,6 @@ const ProductsCrud = ({
     setIsOpen(true);
   };
 
-  const handleDelete = (product) => {
-    console.log(product.product_id);
-  };
-
   return (
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-8">
@@ -79,7 +75,7 @@ const ProductsCrud = ({
                 {editingProduct ? "Edit Product" : "Add New Product"}
               </DialogTitle>
             </DialogHeader>
-            <form action={newProductAction} className="flex flex-col gap-6">
+            <form action={editingProduct ? updateProductAction : newProductAction} className="flex flex-col gap-6">
               <div className="grid grid-cols-2 gap-4">
                 {/* Image Preview Section */}
                 <div className="col-span-2 space-y-2 grid grid-cols-1 gap-4">
@@ -103,6 +99,22 @@ const ProductsCrud = ({
                     className="file:mr-4 file:bg-black file:text-white file:py-2 file:px-4 file:!border-0 file:text-sm file:font-semibold !outline-1"
                   />
                 </div>
+
+                <Input
+                  type="hidden"
+                  id="product_id"
+                  name="product_id"
+                  required={!editingProduct}
+                  defaultValue={editingProduct?.product_id}
+                />
+
+                <Input
+                  type="hidden"
+                  id="existing_image_url"
+                  name="existing_image_url"
+                  required={!editingProduct}
+                  defaultValue={editingProduct?.product_image}
+                />
 
                 <div className="space-y-2">
                   <Label htmlFor="product_code" className="uppercase">
