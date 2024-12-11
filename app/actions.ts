@@ -5,6 +5,35 @@ import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+export async function deleteProductAction(productId: string): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient()
+  try {
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('product_id', productId);
+
+    if (error) {
+      return encodedRedirect(
+        "error",
+        "/admin/products",
+        `Error Deleting Product`
+      );
+    }
+    return encodedRedirect(
+      "success",
+      "/admin/products",
+      `Successfully deleted a product.`
+    );
+  } catch (err) {
+    return encodedRedirect(
+      "error",
+      "/admin/products",
+      `Unexpected Error: ${(err as Error).message}`
+    );
+  }
+}
+
 export const newProductAction = async (formData: FormData) => {
   const supabase = await createClient();
   const product_image = formData.get("product_image") as File;
