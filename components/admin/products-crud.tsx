@@ -280,7 +280,7 @@ const ProductsCrud = ({
                             variant="ghost"
                             size="icon"
                             className="text-red-500 hover:text-red-700"
-                            formAction={() => deleteProductAction(product.product_id)}
+                            formAction={() => deleteProductAction(product.product_id, product.product_image)}
                             pendingText="Deleting..."
                           >
                             <Trash2 className="w-4 h-4" />
