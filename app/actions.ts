@@ -70,7 +70,15 @@ export const updateProductAction = async (formData: FormData) => {
 
       //Deleting Old Image
 
-      await deleteImage(imageUrl);
+      const {success, error} = await deleteImage(imageUrl);
+
+      if (!success) {
+        return encodedRedirect(
+          "error",
+          "/admin/products",
+          `Image Deletion failed: ${error}`
+        );
+      }
   
       // Upload new image to Supabase storage bucket
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -167,7 +175,7 @@ export const updateProductAction = async (formData: FormData) => {
   );
 }
 
-export async function deleteProductAction(productId: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteProductAction(productId: string, productImage: string): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
   try {
     const { error } = await supabase
@@ -182,6 +190,18 @@ export async function deleteProductAction(productId: string): Promise<{ success:
         `Error Deleting Product`
       );
     }
+
+    const {success, deleteError} = await deleteImage(productImage);
+
+    if (!success) {
+      return encodedRedirect(
+        "error",
+        "/admin/products",
+        `Image Deletion failed: ${deleteError}`
+      );
+    }
+
+
     return encodedRedirect(
       "success",
       "/admin/products",
