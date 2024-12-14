@@ -1,4 +1,4 @@
-import { signOutAction, getCustomerFullName } from "@/app/actions";
+import { signOutAction } from "@/app/actions";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { Button } from "../ui/button";
@@ -9,8 +9,6 @@ export default async function AuthButton() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const fullname = await getCustomerFullName(user?.id);
 
   if (!user) {
     return (
@@ -36,7 +34,15 @@ export default async function AuthButton() {
 
   return (
     <div className="flex ml-auto uppercase items-center h-full">
-      <span className="pr-10">Hey, {fullname}!</span>
+      <Link
+        href="/cart"
+        className="flex items-center pr-10 h-full relative after:content-[''] after:right-0 after:bg-black after:w-[1px] after:h-full after:absolute after:top-0"
+      >
+        Cart (0)
+      </Link>{" "}
+      <Link href="/profile" className="flex items-center px-10 h-full">
+        PROFILE
+      </Link>
       <form action={signOutAction} className="h-full">
         <Button
           type="submit"

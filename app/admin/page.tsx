@@ -12,10 +12,11 @@ const AdminDashboard = () => {
     }
   }, [pathname, navigate]);
 
-  return (<div>
-    admin
-    </div>)
-  ;
+  return (
+    <div className="flex-1 w-full flex items-center justify-center min-h-screen">
+      <div className="loader"></div>
+    </div>
+  );
 };
 
 export default AdminDashboard;

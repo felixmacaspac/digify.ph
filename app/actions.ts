@@ -5,37 +5,42 @@ import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-async function deleteImage(publicUrl: string): Promise<{ success: boolean; error?: string }> {
-
+async function deleteImage(
+  publicUrl: string
+): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
   try {
     // Extract the storage bucket and file path from the public URL
     const url = new URL(publicUrl);
-    const pathSegments = url.pathname.split('/');
+    const pathSegments = url.pathname.split("/");
 
     // Ensure the URL has enough segments to extract bucket and file path
     if (pathSegments.length < 3) {
-      throw new Error('Invalid public URL format. Unable to extract bucket and file path.');
+      throw new Error(
+        "Invalid public URL format. Unable to extract bucket and file path."
+      );
     }
 
     const bucketName = "products";
-    const filePath = pathSegments.slice(6).join('/');
-    
+    const filePath = pathSegments.slice(6).join("/");
+
     console.log(`Bucket Name: ${bucketName}`);
     console.log(`filePath: ${filePath}`);
     console.log(`File segments: ${pathSegments}`);
 
     // Attempt to delete the file from the storage bucket
-    const { error } = await supabase.storage.from(bucketName).remove([filePath]);
+    const { error } = await supabase.storage
+      .from(bucketName)
+      .remove([filePath]);
 
     if (error) {
-      console.error('Error deleting image:', error);
+      console.error("Error deleting image:", error);
       return { success: false, error: error.message };
     }
 
     return { success: true };
   } catch (err) {
-    console.error('Unexpected error:', err);
+    console.error("Unexpected error:", err);
     return { success: false, error: (err as Error).message };
   }
 }
@@ -66,92 +71,90 @@ export const updateProductAction = async (formData: FormData) => {
         "/admin/products",
         "Invalid file type. Only .png, .jpeg, or .jpg images are allowed."
       );
-      }
-
-      //Deleting Old Image
-
-      const {success, error} = await deleteImage(imageUrl);
-
-      if (!success) {
-        return encodedRedirect(
-          "error",
-          "/admin/products",
-          `Image Deletion failed: ${error}`
-        );
-      }
-  
-      // Upload new image to Supabase storage bucket
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("products")
-        .upload(`images/${Date.now()}_${product_image.name}`, product_image);
-    
-      if (uploadError) {
-        return encodedRedirect(
-          "error",
-          "/admin/products",
-          `Image upload failed: ${uploadError.message}`
-        );
-      }
-  
-      const { data: publicURLData } = supabase.storage
-      .from("products")
-      .getPublicUrl(uploadData.path);
-  
-      if (!publicURLData) {
-        return encodedRedirect(
-          "error",
-          "/admin/products",
-          "Failed to get the image URL."
-        );
-      }
-  
-      imageUrl = publicURLData.publicUrl;
     }
 
-    
+    //Deleting Old Image
 
-    // Validate required fields (excluding image)
-    const requiredFields = [
-      "product_code",
-      "brand",
-      "megapixels",
-      "sensor_size",
-      "sensor_type",
-      "price",
-      "stocks",
-    ];
+    const { success, error } = await deleteImage(imageUrl);
 
-    const missingFields = requiredFields.filter(
-      (field) => !formData.get(field)?.toString().trim()
-    );
-
-    if (missingFields.length > 0) {
+    if (!success) {
       return encodedRedirect(
         "error",
         "/admin/products",
-        `Required fields are missing: ${missingFields.join(", ")}`
+        `Image Deletion failed: ${error}`
       );
     }
 
-    // Extract form data
-    const product_code = formData.get("product_code")?.toString();
-    const brand = formData.get("brand")?.toString();
-    const megapixels = formData.get("megapixels")?.toString();
-    const sensor_size = formData.get("sensor_size")?.toString();
-    const sensor_type = formData.get("sensor_type")?.toString();
-    const price = formData.get("price")?.toString();
-    const stocks = formData.get("stocks")?.toString();
+    // Upload new image to Supabase storage bucket
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("products")
+      .upload(`images/${Date.now()}_${product_image.name}`, product_image);
 
-    // Prepare update object
+    if (uploadError) {
+      return encodedRedirect(
+        "error",
+        "/admin/products",
+        `Image upload failed: ${uploadError.message}`
+      );
+    }
+
+    const { data: publicURLData } = supabase.storage
+      .from("products")
+      .getPublicUrl(uploadData.path);
+
+    if (!publicURLData) {
+      return encodedRedirect(
+        "error",
+        "/admin/products",
+        "Failed to get the image URL."
+      );
+    }
+
+    imageUrl = publicURLData.publicUrl;
+  }
+
+  // Validate required fields (excluding image)
+  const requiredFields = [
+    "product_code",
+    "brand",
+    "megapixels",
+    "sensor_size",
+    "sensor_type",
+    "price",
+    "stocks",
+  ];
+
+  const missingFields = requiredFields.filter(
+    (field) => !formData.get(field)?.toString().trim()
+  );
+
+  if (missingFields.length > 0) {
+    return encodedRedirect(
+      "error",
+      "/admin/products",
+      `Required fields are missing: ${missingFields.join(", ")}`
+    );
+  }
+
+  // Extract form data
+  const product_code = formData.get("product_code")?.toString();
+  const brand = formData.get("brand")?.toString();
+  const megapixels = formData.get("megapixels")?.toString();
+  const sensor_size = formData.get("sensor_size")?.toString();
+  const sensor_type = formData.get("sensor_type")?.toString();
+  const price = formData.get("price")?.toString();
+  const stocks = formData.get("stocks")?.toString();
+
+  // Prepare update object
   const updateData: Record<string, string> = {
-    "product_code": product_code,
-    "product_image": imageUrl,
-    "brand": brand,
-    "megapixels": megapixels,
-    "sensor_size": sensor_size,
-    "sensor_type": sensor_type,
-    "price": price,
-    "stocks": stocks,
+    product_code: product_code,
+    product_image: imageUrl,
+    brand: brand,
+    megapixels: megapixels,
+    sensor_size: sensor_size,
+    sensor_type: sensor_type,
+    price: price,
+    stocks: stocks,
   };
 
   // Perform the update
@@ -173,15 +176,18 @@ export const updateProductAction = async (formData: FormData) => {
     "/admin/products",
     "Updated product successfully."
   );
-}
+};
 
-export async function deleteProductAction(productId: string, productImage: string): Promise<{ success: boolean; error?: string }> {
-  const supabase = await createClient()
+export async function deleteProductAction(
+  productId: string,
+  productImage: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
   try {
     const { error } = await supabase
-      .from('products')
+      .from("products")
       .delete()
-      .eq('product_id', productId);
+      .eq("product_id", productId);
 
     if (error) {
       return encodedRedirect(
@@ -191,7 +197,7 @@ export async function deleteProductAction(productId: string, productImage: strin
       );
     }
 
-    const {success, deleteError} = await deleteImage(productImage);
+    const { success, deleteError } = await deleteImage(productImage);
 
     if (!success) {
       return encodedRedirect(
@@ -200,7 +206,6 @@ export async function deleteProductAction(productId: string, productImage: strin
         `Image Deletion failed: ${deleteError}`
       );
     }
-
 
     return encodedRedirect(
       "success",
@@ -433,7 +438,7 @@ export const forgotPasswordAction = async (formData: FormData) => {
   }
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/auth/callback?redirect_to=/protected/reset-password`,
+    redirectTo: `${origin}/auth/callback?redirect_to=/profile/reset-password`,
   });
 
   if (error) {
@@ -466,7 +471,7 @@ export const resetPasswordAction = async (formData: FormData) => {
   if (!password || !confirmPassword) {
     encodedRedirect(
       "error",
-      "/protected/reset-password",
+      "/profile/reset-password",
       "Password and confirm password are required"
     );
   }
@@ -474,7 +479,7 @@ export const resetPasswordAction = async (formData: FormData) => {
   if (password !== confirmPassword) {
     encodedRedirect(
       "error",
-      "/protected/reset-password",
+      "/profile/reset-password",
       "Passwords do not match"
     );
   }
@@ -486,12 +491,12 @@ export const resetPasswordAction = async (formData: FormData) => {
   if (error) {
     encodedRedirect(
       "error",
-      "/protected/reset-password",
+      "/profile/reset-password",
       "Password update failed"
     );
   }
 
-  encodedRedirect("success", "/protected/reset-password", "Password updated");
+  encodedRedirect("success", "/profile/reset-password", "Password updated");
 };
 
 // Sign out action
