@@ -4,8 +4,8 @@ import AuthButton from "./auth-button";
 
 const menu = [
   { name: "Home", href: "/" },
-  { name: "Products", href: "/about" },
-  { name: "About", href: "/contact" },
+  { name: "Products", href: "/products" },
+  { name: "About", href: "/about" },
 ];
 
 const Header = () => {
