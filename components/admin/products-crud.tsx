@@ -22,7 +22,11 @@ import { SubmitButton } from "@/components/submit-button";
 import { FormMessage, Message } from "@/components/form-message";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
-import { newProductAction, deleteProductAction, updateProductAction } from "@/app/actions";
+import {
+  newProductAction,
+  deleteProductAction,
+  updateProductAction,
+} from "@/app/actions";
 
 const ProductsCrud = ({
   searchParams,
@@ -75,7 +79,10 @@ const ProductsCrud = ({
                 {editingProduct ? "Edit Product" : "Add New Product"}
               </DialogTitle>
             </DialogHeader>
-            <form action={editingProduct ? updateProductAction : newProductAction} className="flex flex-col gap-6">
+            <form
+              action={editingProduct ? updateProductAction : newProductAction}
+              className="flex flex-col gap-6"
+            >
               <div className="grid grid-cols-2 gap-4">
                 {/* Image Preview Section */}
                 <div className="col-span-2 space-y-2 grid grid-cols-1 gap-4">
@@ -252,9 +259,9 @@ const ProductsCrud = ({
                   <TableRow key={index}>
                     <TableCell>
                       <img
-                        src={product.product_image || "/default-image.png"}
-                        alt={product.product_code || "No Image"}
-                        className="w-16 h-16 object-cover rounded"
+                        src={product.product_image}
+                        alt={product.product_code}
+                        className="object-cover rounded w-full"
                       />
                     </TableCell>
                     <TableCell>{product.product_code}</TableCell>
@@ -263,7 +270,7 @@ const ProductsCrud = ({
                     <TableCell>{product.sensor_size}</TableCell>
                     <TableCell>{product.sensor_type}</TableCell>
                     <TableCell>
-                      ${parseFloat(product.price || "0").toFixed(2)}
+                      ₱{parseFloat(product.price || "0").toFixed(2)}
                     </TableCell>
                     <TableCell>{product.stocks}</TableCell>
                     <TableCell className="text-right">
@@ -280,7 +287,12 @@ const ProductsCrud = ({
                             variant="ghost"
                             size="icon"
                             className="text-red-500 hover:text-red-700"
-                            formAction={() => deleteProductAction(product.product_id, product.product_image)}
+                            formAction={() =>
+                              deleteProductAction(
+                                product.product_id,
+                                product.product_image
+                              )
+                            }
                             pendingText="Deleting..."
                           >
                             <Trash2 className="w-4 h-4" />
