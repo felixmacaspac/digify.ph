@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/client";
+import Image from "next/image";
 
 export async function generateStaticParams() {
   const supabase = createClient();
@@ -34,13 +35,30 @@ export default async function Page({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div>
-      <h1>
-        {product.brand} {product.product_code}
-      </h1>
-      <p>Price: ₱{product.price}</p>
-      <p>Stocks: {product.stocks}</p>
-      <p>Sensor: {product.sensor_type}</p>
-    </div>
+    <section className="my-20">
+      <div className="container">
+        <div className="flex flex-row items-center justify-center gap-10">
+          <Image
+            src={product.product_image}
+            alt={product.brand}
+            width={150}
+            height={150}
+            className="rounded-lg"
+          />
+          <div>
+            <h1 className="text-4xl font-bold text-black">
+              {product.brand} {product.product_code}
+            </h1>
+            <p className="text-xl font-bold mb-6 mt-2">
+              Price: ₱{product.price}
+            </p>
+            <p className="text-xl text-gray-600">{product.megapixels} MP</p>
+            <p className="text-xl text-gray-600">{product.sensor_size}</p>
+            <p className="text-xl text-gray-600">{product.sensor_type}</p>
+            <p className="text-xl text-gray-600">Stock: {product.stocks}</p>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
