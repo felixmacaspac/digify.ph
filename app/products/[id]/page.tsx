@@ -1,4 +1,9 @@
 import { createClient } from "@/utils/supabase/client";
+import { SubmitButton } from "@/components/submit-button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { addToCartAction } from "@/app/actions";
+
 import Image from "next/image";
 
 export async function generateStaticParams() {
@@ -21,7 +26,7 @@ export async function generateStaticParams() {
 export default async function Page({ params }: { params: { id: string } }) {
   const supabase = createClient();
 
-  const { id } = params;
+  const { id } = await params;
 
   const { data: product, error } = await (await supabase)
     .from("products")
@@ -59,6 +64,29 @@ export default async function Page({ params }: { params: { id: string } }) {
           </div>
         </div>
       </div>
+      <form>
+      <Input
+          type="hidden"
+          name="product_id"
+          placeholder={product.product_id}
+          value={product.product_id}
+          required
+        />
+          <Label htmlFor="quantity">Quantity</Label>
+          <Input
+            type="number"
+            name="quantity"
+            placeholder="1"
+            min={1}
+            max={product.stocks}
+            required
+          />
+
+      <SubmitButton pendingText="Adding to Cart..." formAction={addToCartAction}>
+          Add to Cart
+        </SubmitButton>
+      </form>
+
     </section>
   );
 }

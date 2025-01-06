@@ -5,6 +5,52 @@ import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+//Add to cart function 
+
+export const addToCartAction = async (formData: FormData) => {
+  const product_id = formData.get("product_id") as string;
+  const quantity = formData.get("quantity") as string;
+  const supabase = await createClient();
+
+  // Get user
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return encodedRedirect(
+      "error",
+      `/login`,
+      userError?.message || "User not logged in"
+    );
+  }
+
+  // Insert to cart
+  const { error: insertError } = await supabase
+    .from('cart_items')
+    .insert([
+      { 
+        customer_id: user.id, 
+        product_id, 
+        quantity 
+      }
+    ]);
+
+  // Wait for insert to complete before redirect
+  if (insertError) {
+    return encodedRedirect(
+      "error",
+      `/products/${product_id}`,
+      insertError.message
+    );
+  }
+
+  // Only redirect after confirmed insert
+  return encodedRedirect(
+    "success",
+    `/cart`,
+    "Added to cart successfully"
+  );
+};
+
 async function deleteImage(
   publicUrl: string
 ): Promise<{ success: boolean; error?: string }> {
@@ -505,3 +551,5 @@ export const signOutAction = async () => {
   await supabase.auth.signOut();
   return redirect("/sign-in");
 };
+
+
