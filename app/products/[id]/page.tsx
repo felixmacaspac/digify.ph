@@ -40,7 +40,7 @@ export default async function Page({ params }: { params: { id: string } }) {
   }
 
   return (
-    <section className="my-20">
+    <section className="my-20 min-h-screen">
       <form>
         <div className="container">
           <div className="flex flex-row items-start justify-center gap-10">
