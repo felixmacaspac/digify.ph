@@ -3,6 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2, Minus, Plus } from "lucide-react";
+import Link from "next/link";
 
 const cartItems = [
   {
@@ -103,9 +104,12 @@ const CartPage = () => {
                 <span className="text-xl font-bold">₱300.00</span>
               </div>
 
-              <Button className="w-full mt-4 text- uppercase font-bold">
+              <Link
+                href="/checkout"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary hover:bg-primary/90 h-10 px-4 py-2 w-full mt-4 text- uppercase font-bold"
+              >
                 Proceed to Checkout
-              </Button>
+              </Link>
             </div>
           </>
         )}
