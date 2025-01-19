@@ -1,37 +1,111 @@
 "use client";
-
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2, Minus, Plus } from "lucide-react";
 import Link from "next/link";
+import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 
-const cartItems = [
-  {
-    id: 1,
-    products: {
-      name: "Product 1",
-      price: 10,
-      image_url: "https://placehold.co/600x400",
-    },
-    quantity: 10,
-  },
-  {
-    id: 2,
-    products: {
-      name: "Product 2",
-      price: 20,
-      image_url: "https://placehold.co/600x400",
-    },
-    quantity: 2,
-  },
-];
+interface cartItem {
+      cart_id: string;
+    product: {
+      product_code: string;
+      brand: string;
+      megapixels: string;
+      sensor_size: string;
+      sensor_type: string;
+      price: number;
+      stocks: string;
+      product_image: string;
+    };
+    quantity: number;
+}
+
 
 const CartPage = () => {
+  const supabase = createClient();
+  const router = useRouter();
+  const [cartItems, setCartItems] = useState<cartItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+
+
+  useEffect(() => {
+    const fetchCartData = async () => {
+      try {
+        const {
+          data: { user: userData },
+          error: userError,
+        } = await supabase.auth.getUser();
+  
+        if (userError || !userData) {
+          router.push("/sign-in");
+          return;
+        }
+    
+  
+        //fetch cart items based on the user_id
+  
+        const { data: cartData, error : cartError} = await supabase
+          .from('cart_items')
+          .select("cart_id, product_id, quantity")
+          .eq("customer_id", userData.id);
+  
+        if (cartError) {
+          router.push("/products");
+          return;
+        }
+  
+        // Extract all product IDs from the cart
+        const productIds = cartData.map((item) => item.product_id);
+  
+        // Fetch product data for all product IDs
+        const { data: productData, error: productError } = await supabase
+          .from("products")
+          .select("*")
+          .in("product_id", productIds);
+  
+        if (productError || !productData) {
+          console.error("Error fetching product data:", productError);
+          router.push("/products");
+          return;
+        }
+  
+        // Merge product data into cart items
+        const mergedCartData = cartData.map((item) => ({
+          ...item,
+          product: productData.find((product) => product.product_id === item.product_id),
+        }));
+  
+  
+        setCartItems(mergedCartData);
+      } catch (error) {
+        console.error("Error fetching cart items:", error);
+      } finally {
+        setLoading(false);
+      }
+      
+    };
+  
+
+    fetchCartData();
+  }, [router]);
+
+
+  if (loading) {
+    return (
+      <div className="flex-1 w-full flex items-center justify-center min-h-screen">
+        <div className="loader"></div>
+      </div>
+    );
+  }
+
+  
   return (
     <section className="py-20 min-h-screen">
       <div className="container max-w-4xl">
         <h1 className="text-3xl text-black font-bold mb-6">Shopping Cart</h1>
-
         {cartItems.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500">Your cart is empty</p>
@@ -40,22 +114,22 @@ const CartPage = () => {
           <>
             <div className="space-y-4">
               {cartItems.map((item) => (
-                <Card key={item.id}>
+                <Card key={item.cart_id}>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">
                       <div className="w-20 h-20 bg-gray-100 rounded">
-                        {item.products.image_url && (
+                        {item.product.product_image && (
                           <img
-                            src={item.products.image_url}
-                            alt={item.products.name}
+                            src={item.product.product_image}
+                            alt={item.product.product_code}
                             className="w-full h-full object-cover rounded"
                           />
                         )}
                       </div>
 
                       <div className="flex-1">
-                        <h3 className="font-medium">{item.products.name}</h3>
-                        <p className="text-gray-600">₱150.00</p>
+                        <h3 className="font-medium">{item.product.product_code}</h3>
+                        <p className="text-gray-600">₱{item.product.price}</p>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -82,7 +156,7 @@ const CartPage = () => {
                         </Button>
                       </div>
 
-                      <div className="w-24 text-right">₱150.00</div>
+                      <div className="w-24 text-right">₱{item.quantity * item.product.price}</div>
 
                       <Button
                         variant="ghost"
