@@ -1,9 +1,12 @@
 "use client";
-
 import { CheckCircle } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 const SuccessPage = () => {
+  const searchParams = useSearchParams();
+  const orderId = searchParams.get("orderId"); // Retrieve the orderId from the query parameters
+
   return (
     <section className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
@@ -22,7 +25,7 @@ const SuccessPage = () => {
 
         <div className="bg-gray-50 p-4 rounded-lg mb-6">
           <div className="text-sm text-gray-600 mb-2">Order number</div>
-          <div className="text-lg font-semibold">#ORD-2024-1234</div>
+          <div className="text-lg font-semibold">#ORD-2025-{orderId || "XXXX"}</div>
         </div>
 
         <div className="space-y-4">
