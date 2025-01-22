@@ -36,7 +36,7 @@ interface FilterState {
   megapixels: string;
   sensor_size: string;
   sensor_type: string;
-  stocks: string;
+  stocks: number;
 }
 
 const Products = () => {
@@ -54,7 +54,7 @@ const Products = () => {
     megapixels: "",
     sensor_size: "",
     sensor_type: "",
-    stocks: "",
+    stocks: 0,
   });
 
   useEffect(() => {

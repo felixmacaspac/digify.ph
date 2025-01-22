@@ -147,7 +147,7 @@ const CheckoutPage = () => {
       const orderData = {
         customer_id: userID, // Get current user ID
         payment_method: formData.paymentMethod,
-        order_total: calculateTotal(cartItems)
+        order_total: calculateTotal(cartItems) + 50
       };
 
       // 2. Create a new order record
@@ -181,17 +181,43 @@ const CheckoutPage = () => {
           // Handle error, e.g., log the error or retry the insert
           continue; // Continue processing other cart items even if one fails
         }
-      }
 
-      // 4. Order creation successful (handle success scenario)
-      console.log("Order created successfully!");
+        // Get current stock for the product
+        const { data: productData, error: productError } = await supabase
+          .from('products')
+          .select('stocks')
+          .eq('product_id', cartItem.product.product_id)
+          .single();
 
-      // 5. Delete cart items
-      for (const cartItem of cartItems) {
+        if (productError || !productData) {
+          console.error("Error fetching product stock:", productError || "No product data found");
+          continue; // Continue processing other cart items
+        }
+
+        const newStock = productData.stocks - cartItem.quantity;
+
+        if (newStock < 0) {
+          console.error(`Insufficient stock for product ID: ${cartItem.product.product_id}`);
+          continue; // Skip this cart item if stock is insufficient
+        }
+
+        // Reduce stock in 'products' table
+        const { error: stockError } = await supabase
+          .from('products')
+          .update({ stocks: newStock})
+          .eq('product_id', cartItem.product.product_id);
+
+        if (stockError) {
+          console.error("Error updating product stock:", stockError);
+          // Handle error appropriately
+          continue;
+        }
+
+        // 5. Delete cart items
         const { error: deleteError } = await supabase
-          .from('cart_items')
-          .delete()
-          .eq('cart_id', cartItem.cart_id); // Assuming cart_id is unique
+        .from('cart_items')
+        .delete()
+        .eq('cart_id', cartItem.cart_id); // Assuming cart_id is unique
 
         if (deleteError) {
           console.error("Error deleting cart item:", deleteError);
@@ -199,7 +225,6 @@ const CheckoutPage = () => {
           continue; // Continue deleting other cart items
         }
       }
-
 
       // Redirect to success page, clear cart, etc.
       router.push(`/checkout/success?orderId=${orderId}`); 
@@ -210,6 +235,12 @@ const CheckoutPage = () => {
       // Handle general errors, e.g., display an error message to the user
     }
   };
+
+      // Calculate the total cost of the cart
+      const cartTotal = cartItems.reduce(
+        (total, item) => total + item.quantity * item.product.price,
+        0
+      );
 
   return (
     <section className="py-20 min-h-screen bg-gray-50">
@@ -306,7 +337,7 @@ const CheckoutPage = () => {
                         </p>
                       </div>
                       <p className="font-medium">
-                        <span>{item.product.price * item.quantity}</span>
+                        <span>{(item.product.price * item.quantity).toFixed(2)}</span>
                       </p>
                     </div>
                   ))}
@@ -314,7 +345,7 @@ const CheckoutPage = () => {
                   <div className="border-t pt-4 space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Subtotal</span>
-                      <span>₱550.00</span>
+                      <span>₱{cartTotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span>Shipping</span>
@@ -322,7 +353,7 @@ const CheckoutPage = () => {
                     </div>
                     <div className="flex justify-between font-bold text-lg border-t pt-2">
                       <span>Total</span>
-                      <span>₱600.00</span>
+                      <span>₱{(cartTotal + 50).toFixed(2)}</span>
                     </div>
                   </div>
                   <Button

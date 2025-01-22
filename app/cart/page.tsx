@@ -93,6 +93,34 @@ const CartPage = () => {
   }, [router]);
 
 
+  const removeItem = async (cartId: string) => {
+    try {
+      // Remove item from the database
+      const { error } = await supabase
+        .from("cart_items")
+        .delete()
+        .eq("cart_id", cartId);
+
+      if (error) {
+        console.error("Error removing item from cart:", error);
+        return;
+      }
+
+      // Update the UI
+      setCartItems((prevItems) => prevItems.filter((item) => item.cart_id !== cartId));
+    } catch (error) {
+      console.error("Error removing item:", error);
+    }
+  };
+
+    // Calculate the total cost of the cart
+    const cartTotal = cartItems.reduce(
+      (total, item) => total + item.quantity * item.product.price,
+      0
+    );
+  
+
+
   if (loading) {
     return (
       <div className="flex-1 w-full flex items-center justify-center min-h-screen">
@@ -129,7 +157,7 @@ const CartPage = () => {
 
                       <div className="flex-1">
                         <h3 className="font-medium">{item.product.product_code}</h3>
-                        <p className="text-gray-600">₱{item.product.price}</p>
+                        <p className="text-gray-600">₱{item.product.price.toFixed(2)}</p>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -156,13 +184,13 @@ const CartPage = () => {
                         </Button>
                       </div>
 
-                      <div className="w-24 text-right">₱{item.quantity * item.product.price}</div>
+                      <div className="w-24 text-right">₱{(item.quantity * item.product.price).toFixed(2)}</div>
 
                       <Button
                         variant="ghost"
                         size="icon"
                         className="text-red-500"
-                        // onClick={() => removeItem(item.id)}
+                        onClick={() => removeItem(item.cart_id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -175,7 +203,7 @@ const CartPage = () => {
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
               <div className="text-black flex justify-between items-center">
                 <span className="font-bold uppercase">Total</span>
-                <span className="text-xl font-bold">₱300.00</span>
+                <span className="text-xl font-bold">₱{cartTotal.toFixed(2)}</span>
               </div>
 
               <Link
