@@ -113,6 +113,13 @@ const CartPage = () => {
     }
   };
 
+    // Calculate the total cost of the cart
+    const cartTotal = cartItems.reduce(
+      (total, item) => total + item.quantity * item.product.price,
+      0
+    );
+  
+
 
   if (loading) {
     return (
@@ -196,7 +203,7 @@ const CartPage = () => {
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
               <div className="text-black flex justify-between items-center">
                 <span className="font-bold uppercase">Total</span>
-                <span className="text-xl font-bold">₱300.00</span>
+                <span className="text-xl font-bold">₱{cartTotal.toFixed(2)}</span>
               </div>
 
               <Link
