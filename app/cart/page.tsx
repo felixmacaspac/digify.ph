@@ -157,7 +157,7 @@ const CartPage = () => {
 
                       <div className="flex-1">
                         <h3 className="font-medium">{item.product.product_code}</h3>
-                        <p className="text-gray-600">₱{item.product.price}</p>
+                        <p className="text-gray-600">₱{item.product.price.toFixed(2)}</p>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -184,7 +184,7 @@ const CartPage = () => {
                         </Button>
                       </div>
 
-                      <div className="w-24 text-right">₱{item.quantity * item.product.price}</div>
+                      <div className="w-24 text-right">₱{(item.quantity * item.product.price).toFixed(2)}</div>
 
                       <Button
                         variant="ghost"
