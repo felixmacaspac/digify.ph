@@ -8,7 +8,7 @@ interface Product {
   sensor_size: string;
   sensor_type: string;
   price: string;
-  stocks: string;
+  stocks: number;
   product_image: string;
 }
 
@@ -41,7 +41,7 @@ const ProductsListing = ({ products }: ProductsListingProps) => {
             <p className="text-sm text-gray-600">{product.sensor_size}</p>
             <p className="text-sm text-gray-600">{product.sensor_type}</p>
             <p className="font-medium mt-2">₱{product.price}</p>
-            <p className="text-sm text-gray-600">Stock: {product.stocks}</p>
+            <p className="text-sm text-gray-600">{product.stocks > 0 ? `Stock: ${product.stocks}` : "No stock available"}</p>
           </Link>
         ))}
       </div>
