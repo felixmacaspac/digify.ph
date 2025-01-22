@@ -93,6 +93,27 @@ const CartPage = () => {
   }, [router]);
 
 
+  const removeItem = async (cartId: string) => {
+    try {
+      // Remove item from the database
+      const { error } = await supabase
+        .from("cart_items")
+        .delete()
+        .eq("cart_id", cartId);
+
+      if (error) {
+        console.error("Error removing item from cart:", error);
+        return;
+      }
+
+      // Update the UI
+      setCartItems((prevItems) => prevItems.filter((item) => item.cart_id !== cartId));
+    } catch (error) {
+      console.error("Error removing item:", error);
+    }
+  };
+
+
   if (loading) {
     return (
       <div className="flex-1 w-full flex items-center justify-center min-h-screen">
@@ -162,7 +183,7 @@ const CartPage = () => {
                         variant="ghost"
                         size="icon"
                         className="text-red-500"
-                        // onClick={() => removeItem(item.id)}
+                        onClick={() => removeItem(item.cart_id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
