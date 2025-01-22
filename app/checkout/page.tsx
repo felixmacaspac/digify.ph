@@ -181,17 +181,43 @@ const CheckoutPage = () => {
           // Handle error, e.g., log the error or retry the insert
           continue; // Continue processing other cart items even if one fails
         }
-      }
 
-      // 4. Order creation successful (handle success scenario)
-      console.log("Order created successfully!");
+        // Get current stock for the product
+        const { data: productData, error: productError } = await supabase
+          .from('products')
+          .select('stocks')
+          .eq('product_id', cartItem.product.product_id)
+          .single();
 
-      // 5. Delete cart items
-      for (const cartItem of cartItems) {
+        if (productError || !productData) {
+          console.error("Error fetching product stock:", productError || "No product data found");
+          continue; // Continue processing other cart items
+        }
+
+        const newStock = productData.stocks - cartItem.quantity;
+
+        if (newStock < 0) {
+          console.error(`Insufficient stock for product ID: ${cartItem.product.product_id}`);
+          continue; // Skip this cart item if stock is insufficient
+        }
+
+        // Reduce stock in 'products' table
+        const { error: stockError } = await supabase
+          .from('products')
+          .update({ stocks: newStock})
+          .eq('product_id', cartItem.product.product_id);
+
+        if (stockError) {
+          console.error("Error updating product stock:", stockError);
+          // Handle error appropriately
+          continue;
+        }
+
+        // 5. Delete cart items
         const { error: deleteError } = await supabase
-          .from('cart_items')
-          .delete()
-          .eq('cart_id', cartItem.cart_id); // Assuming cart_id is unique
+        .from('cart_items')
+        .delete()
+        .eq('cart_id', cartItem.cart_id); // Assuming cart_id is unique
 
         if (deleteError) {
           console.error("Error deleting cart item:", deleteError);
@@ -199,7 +225,6 @@ const CheckoutPage = () => {
           continue; // Continue deleting other cart items
         }
       }
-
 
       // Redirect to success page, clear cart, etc.
       router.push(`/checkout/success?orderId=${orderId}`); 
