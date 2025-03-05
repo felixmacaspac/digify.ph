@@ -121,7 +121,7 @@ export const updateProductAction = async (formData: FormData) => {
 
     //Deleting Old Image
 
-    const { success, error } = await deleteImage(imageUrl);
+    const { success, error } = await deleteImage(imageUrl ?? "");
 
     if (!success) {
       return encodedRedirect(
@@ -193,14 +193,14 @@ export const updateProductAction = async (formData: FormData) => {
 
   // Prepare update object
   const updateData: Record<string, string> = {
-    product_code: product_code,
-    product_image: imageUrl,
-    brand: brand,
-    megapixels: megapixels,
-    sensor_size: sensor_size,
-    sensor_type: sensor_type,
-    price: price,
-    stocks: stocks,
+    product_code: product_code ?? "",
+    product_image: imageUrl ?? "",
+    brand: brand ?? "",
+    megapixels: megapixels ?? "",
+    sensor_size: sensor_size ?? "",
+    sensor_type: sensor_type ?? "",
+    price: price ?? "",
+    stocks: stocks ?? "",
   };
 
   // Perform the update
@@ -243,7 +243,7 @@ export async function deleteProductAction(
       );
     }
 
-    const { success, deleteError } = await deleteImage(productImage);
+    const { success, error: deleteError } = await deleteImage(productImage);
 
     if (!success) {
       return encodedRedirect(
