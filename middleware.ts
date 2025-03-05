@@ -1,8 +1,22 @@
 import { type NextRequest } from "next/server";
 import { updateSession } from "@/utils/supabase/middleware";
+import { NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+
+  const response = await updateSession(request);
+
+  if (!response) {
+    return NextResponse.next();
+  }
+
+  // Set Content Security Policy (CSP)
+  response.headers.set(
+    "Content-Security-Policy",
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'none';"
+  );
+
+  return response;
 }
 
 export const config = {

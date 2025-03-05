@@ -38,7 +38,7 @@ export default async function Signup(props: {
             type="password"
             name="password"
             placeholder="YOUR PASSWORD"
-            minLength={6}
+            minLength={8}
             required
           />
           <Label htmlFor="first_name">First Name</Label>
