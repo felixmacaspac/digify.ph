@@ -10,11 +10,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Set Content Security Policy (CSP)
-  response.headers.set(
-    "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'none';"
-  );
 
   return response;
 }

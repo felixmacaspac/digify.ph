@@ -1,7 +1,8 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 
 const sidebarItems = [
   { id: "overview", label: "Overview", path: "/admin/overview" },
@@ -11,6 +12,45 @@ const sidebarItems = [
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
+  const router = useRouter();
+  const [role, setRole] = useState<number | null>(null);
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function fetchRole() {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        router.push("/");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("customers")
+        .select("role")
+        .eq("customer_id", user.id)
+        .single();
+
+
+      if (error) {
+        console.error("Error fetching role:", error);
+        router.push("/");
+        return;
+      }
+
+      setRole(data?.role || null);
+
+    }
+
+    fetchRole();
+  }, [router]);
+
+  useEffect(() => {
+    if (role !== 1) {
+      router.push("/"); // ✅ Redirect if user is not an admin
+    }
+  }, [role, router]);
+
 
   return (
     <div className="bg-white">
@@ -21,7 +61,6 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               <Link
                 key={item.id}
                 href={item.path}
-                passHref
                 className={`w-full text-left block py-4 px-10 uppercase transition-colors duration-300 ease-in-out ${
                   pathname === item.path
                     ? "bg-purple text-black"

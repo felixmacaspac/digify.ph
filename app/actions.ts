@@ -4,9 +4,43 @@ import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { z } from "zod";
+import sanitizeHtml from "sanitize-html";
+import { cookies } from "next/headers";
+
+
+// Define Zod schema for server-side validation
+const signUpSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  first_name: z.string().min(1, "First name is required"),
+  last_name: z.string().min(1, "Last name is required"),
+  street: z.string().min(4, "Street must be at least 4 characters"),
+  city: z.string().min(4, "City must be at least 2 characters"),
+  province: z.string().min(4, "Province must be at least 2 characters"),
+  zip: z.string().regex(/^\d{4,6}$/, "Invalid zip code (4-6 digits required)"),
+});
+
+// Define validation schema using Zod
+const productSchema = z.object({
+  product_code: z.string().min(1, "Product code is required").max(50),
+  brand: z.string().min(1, "Brand is required").max(50),
+  megapixels: z.coerce.number().min(0, "Megapixels must be a positive number"),
+  sensor_size: z.string().min(1, "Sensor size is required").max(50),
+  sensor_type: z.string().min(1, "Sensor type is required").max(50),
+  price: z.coerce.number().min(0, "Price must be a positive number"),
+  stocks: z.coerce.number().min(0, "Stocks must be a positive number"),
+});
+
+const passwordSchema = z.string()
+  .min(8, "Password must be at least 8 characters long")
+  .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+  .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+  .regex(/[0-9]/, "Password must contain at least one number")
+  .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character");
+
 
 //Add to cart function 
-
 export const addToCartAction = async (formData: FormData) => {
   const product_id = formData.get("product_id") as string;
   const quantity = formData.get("quantity") as string;
@@ -124,11 +158,8 @@ export const updateProductAction = async (formData: FormData) => {
     const { success, error } = await deleteImage(imageUrl ?? "");
 
     if (!success) {
-      return encodedRedirect(
-        "error",
-        "/admin/products",
-        `Image Deletion failed: ${error}`
-      );
+      console.error(error);
+      return redirect(`/error?message=Image Deletion Failed`)
     }
 
     // Upload new image to Supabase storage bucket
@@ -137,14 +168,11 @@ export const updateProductAction = async (formData: FormData) => {
       .upload(`images/${Date.now()}_${product_image.name}`, product_image);
 
     if (uploadError) {
-      return encodedRedirect(
-        "error",
-        "/admin/products",
-        `Image upload failed: ${uploadError.message}`
-      );
+      console.error(uploadError);
+      return redirect(`/error?message=Image Upload Failed`)
     }
 
-    const { data: publicURLData } = supabase.storage
+    const { data: publicURLData} = supabase.storage
       .from("products")
       .getPublicUrl(uploadData.path);
 
@@ -210,11 +238,8 @@ export const updateProductAction = async (formData: FormData) => {
     .eq("product_id", product_id);
 
   if (error) {
-    return encodedRedirect(
-      "error",
-      "/admin/products",
-      `Failed to update product in the database. ${error.message}`
-    );
+    console.error(error) //Log error internally
+    return redirect(`/error?message=Product Update Failed`)
   }
 
   return encodedRedirect(
@@ -314,45 +339,29 @@ export const newProductAction = async (formData: FormData) => {
     );
   }
 
-  const requiredFields = [
-    "product_code",
-    "brand",
-    "megapixels",
-    "sensor_size",
-    "sensor_type",
-    "price",
-    "stocks",
-  ];
 
-  const missingFields = requiredFields.filter(
-    (field) => !formData.get(field)?.toString().trim()
-  );
+  // Extract & sanitize form data
+  const rawData = {
+    product_code: sanitizeHtml(formData.get("product_code")?.toString() || ""),
+    brand: sanitizeHtml(formData.get("brand")?.toString() || ""),
+    megapixels: sanitizeHtml(formData.get("megapixels")?.toString() || ""),
+    sensor_size: sanitizeHtml(formData.get("sensor_size")?.toString() || ""),
+    sensor_type: sanitizeHtml(formData.get("sensor_type")?.toString() || ""),
+    price: sanitizeHtml(formData.get("price")?.toString() || ""),
+    stocks: sanitizeHtml(formData.get("stocks")?.toString() || ""),
+  };
 
-  if (missingFields.length > 0) {
-    return encodedRedirect(
-      "error",
-      "/admin/products",
-      `Required fields are missing: ${missingFields.join(", ")}`
-    );
-  }
+    // Validate input using Zod
+    const parsedData = productSchema.safeParse(rawData);
+    if (!parsedData.success) {
+      return encodedRedirect("error", "/admin/products", parsedData.error.errors.map((err) => err.message).join(", "));
+    }
 
-  const product_code = formData.get("product_code")?.toString();
-  const brand = formData.get("brand")?.toString();
-  const megapixels = formData.get("megapixels")?.toString();
-  const sensor_size = formData.get("sensor_size")?.toString();
-  const sensor_type = formData.get("sensor_type")?.toString();
-  const price = formData.get("price")?.toString();
-  const stocks = formData.get("stocks")?.toString();
+
 
   const { data, error } = await supabase.from("products").insert([
     {
-      product_code: product_code,
-      brand: brand,
-      megapixels: megapixels,
-      sensor_size: sensor_size,
-      sensor_type: sensor_type,
-      price: price,
-      stocks: stocks,
+      ...parsedData.data,
       product_image: publicURLData.publicUrl,
     },
   ]);
@@ -372,41 +381,69 @@ export const newProductAction = async (formData: FormData) => {
   );
 };
 
+async function getServerTime() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc('get_server_time');
+  
+  if (error) {
+    console.error("Error fetching time:", error);
+    return -1;
+  } else {
+    console.log("Server Time:", data);
+    return new Date(data);
+  }
+}
+
 // Sign up action
 export const signUpAction = async (formData: FormData) => {
-  const email = formData.get("email")?.toString();
-  const password = formData.get("password")?.toString();
-  const first_name = formData.get("first_name")?.toString();
-  const last_name = formData.get("last_name")?.toString();
-  const street = formData.get("street")?.toString();
-  const city = formData.get("city")?.toString();
-  const province = formData.get("province")?.toString();
-  const zip = formData.get("zip")?.toString();
   const supabase = await createClient();
   const origin = (await headers()).get("origin");
+  const data = {
+    email: formData.get("email")?.toString() ?? "",
+    password: formData.get("password")?.toString() ?? "",
+    first_name: formData.get("first_name")?.toString() ?? "",
+    last_name: formData.get("last_name")?.toString() ?? "",
+    street: formData.get("street")?.toString() ?? "",
+    city: formData.get("city")?.toString() ?? "",
+    province: formData.get("province")?.toString() ?? "",
+    zip: formData.get("zip")?.toString() ?? "",
+  };
 
-  if (!email || !password) {
-    return encodedRedirect(
-      "error",
-      "/sign-up",
-      "Email and password are required"
+    // Sanitize inputs
+    const sanitizedData = Object.fromEntries(
+      Object.entries(data).map(([key, value]) => [key, sanitizeHtml(value)])
     );
+
+  // Validate data with Zod
+  const validation = signUpSchema.safeParse(sanitizedData);
+  if (!validation.success) {
+    return encodedRedirect("error", "sign-up", validation.error.errors.map(err => err.message).join(", "));
   }
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
+
+    // Validate inputs using Zod
+    const validatedData = signUpSchema.parse(sanitizedData);
+
+    const passwordValidation = passwordSchema.safeParse(validatedData.password);
+    if (!passwordValidation.success) {
+      return encodedRedirect("error", "sign-up", passwordValidation.error.errors.map(err => err.message).join(", "));
+    }
+
+  // Sign up the user with Supabase Auth
+  const { data: authData, error: authError } = await supabase.auth.signUp({
+    email: validatedData.email,
+    password: validatedData.password,
     options: {
       emailRedirectTo: `${origin}/auth/callback`,
     },
   });
 
-  if (error) {
-    console.error(error.code + " " + error.message);
-    return encodedRedirect("error", "/sign-up", error.message);
+  if (authError) {
+    console.error(authError.code + " " + authError.message);
+    return encodedRedirect("error", "/sign-up", authError.message);
   }
 
-  const userId = data?.user?.id;
+  const userId = authData?.user?.id;
   if (!userId) {
     return encodedRedirect(
       "error",
@@ -415,15 +452,16 @@ export const signUpAction = async (formData: FormData) => {
     );
   }
 
-  const { error: insertError } = await supabase.from("customers").insert({
-    customer_id: userId,
-    first_name,
-    last_name,
-    street,
-    city,
-    province,
-    zip,
-  });
+// Insert additional user details into the "customers" table
+const { error: insertError } = await supabase.from("customers").insert({
+  customer_id: userId,
+  first_name: validatedData.first_name,
+  last_name: validatedData.last_name,
+  street: validatedData.street,
+  city: validatedData.city,
+  province: validatedData.province,
+  zip: validatedData.zip,
+});
 
   if (insertError) {
     return encodedRedirect("error", "/sign-up", insertError.message);
@@ -442,14 +480,52 @@ export const signInAction = async (formData: FormData) => {
   const password = formData.get("password") as string;
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.signInWithPassword({
+  if (!email || !password) {
+    return encodedRedirect("error", "/sign-in", "Please input necessary fields!");
+  }
+
+  const { data: failedUser } = await supabase
+    .from("failed_logins")
+    .select("*")
+    .eq("email", email)
+    .single();
+
+  if (failedUser && failedUser.attempts + 1 >= 5) {
+    const lastAttemptTime = new Date(failedUser.last_attempt).getTime();
+    const lockoutDuration = 15 * 60 * 1000; // 15 minutes lockout
+    const serverTime = await getServerTime();
+
+    if (serverTime == -1) return encodedRedirect("error", "/sign-in", "Error fetching server time!");
+
+    const timeDifference = serverTime.getTime() - lastAttemptTime;
+
+
+    if (timeDifference < lockoutDuration) {
+      console.log("Too many failed attempts. Lockout active.");
+      return encodedRedirect("error", "/sign-in", "Too many failed attempts. Try again later.");
+    } else {
+      console.log("Lockout expired. Resetting failed attempts.");
+      await supabase.from("failed_logins").delete().eq("email", email);
+    }
+  }
+
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
   if (error) {
+    if (failedUser) {
+      await supabase
+        .from("failed_logins")
+        .update({ attempts: failedUser.attempts + 1, last_attempt: new Date().toISOString() })
+        .eq("email", email);
+    } else {
+      await supabase.from("failed_logins").insert([{ email, attempts: 1 }]);
+    }
     return encodedRedirect("error", "/sign-in", error.message);
   }
+
 
   return redirect("/admin");
 };

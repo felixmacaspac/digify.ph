@@ -27,6 +27,18 @@ import {
   deleteProductAction,
   updateProductAction,
 } from "@/app/actions";
+import DOMPurify from "dompurify";
+import {z} from "zod";
+
+const productSchema = z.object({
+  product_code: z.string().min(1).max(50),
+  brand: z.string().min(1).max(50),
+  megapixels: z.coerce.number().positive(),
+  sensor_size: z.string().min(1).max(50),
+  sensor_type: z.string().min(1).max(50),
+  price: z.coerce.number().positive(),
+  stocks: z.coerce.number().int().nonnegative(),
+});
 
 const ProductsCrud = ({
   searchParams,
@@ -47,16 +59,56 @@ const ProductsCrud = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleAddNewProduct = () => {
     setIsOpen(true);
     setEditingProduct(null);
+    setErrors({});
   };
 
   const handleEdit = (product) => {
     setEditingProduct(product);
     setIsOpen(true);
+    setErrors({});
   };
+
+    // Form Submission Handler
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      const formData = new FormData(e.currentTarget);
+  
+      // Extract & sanitize data
+      const productData = {
+        product_code: DOMPurify.sanitize(formData.get("product_code") as string),
+        brand: DOMPurify.sanitize(formData.get("brand") as string),
+        megapixels: formData.get("megapixels"),
+        sensor_size: DOMPurify.sanitize(formData.get("sensor_size") as string),
+        sensor_type: DOMPurify.sanitize(formData.get("sensor_type") as string),
+        price: formData.get("price"),
+        stocks: formData.get("stocks"),
+      };
+  
+      // Validate input using Zod
+      const result = productSchema.safeParse(productData);
+  
+      if (!result.success) {
+        // Format errors for easy display
+        const formattedErrors: Record<string, string> = {};
+        result.error.errors.forEach((err) => {
+          formattedErrors[err.path[0]] = err.message;
+        });
+        setErrors(formattedErrors);
+        return;
+      }
+  
+      // Proceed with form action (new or update)
+      const action = editingProduct ? updateProductAction : newProductAction;
+      action(formData);
+      setIsOpen(false);
+      setEditingProduct(null);
+      setErrors({});
+    };
 
   return (
     <div className="container mx-auto py-10">
@@ -80,7 +132,7 @@ const ProductsCrud = ({
               </DialogTitle>
             </DialogHeader>
             <form
-              action={editingProduct ? updateProductAction : newProductAction}
+              onSubmit={handleSubmit}
               className="flex flex-col gap-6"
             >
               <div className="grid grid-cols-2 gap-4">
@@ -134,6 +186,7 @@ const ProductsCrud = ({
                     required
                     defaultValue={editingProduct?.product_code}
                   />
+                   {errors.product_code && <p className="text-red-500">{errors.product_code}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -147,6 +200,7 @@ const ProductsCrud = ({
                     required
                     defaultValue={editingProduct?.brand}
                   />
+                  {errors.brand && <p className="text-red-500">{errors.brand}</p>}
                 </div>
 
                 {/* Other input fields */}
@@ -162,6 +216,7 @@ const ProductsCrud = ({
                     step="0.1"
                     defaultValue={editingProduct?.megapixels}
                   />
+                  {errors.megapixels && <p className="text-red-500">{errors.megapixels}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -175,6 +230,7 @@ const ProductsCrud = ({
                     required
                     defaultValue={editingProduct?.sensor_size}
                   />
+                  {errors.sensor_size && <p className="text-red-500">{errors.sensor_size}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -188,6 +244,7 @@ const ProductsCrud = ({
                     required
                     defaultValue={editingProduct?.sensor_type}
                   />
+                  {errors.sensor_type && <p className="text-red-500">{errors.sensor_type}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -203,6 +260,7 @@ const ProductsCrud = ({
                     required
                     defaultValue={editingProduct?.price}
                   />
+                  {errors.price && <p className="text-red-500">{errors.price}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -217,6 +275,7 @@ const ProductsCrud = ({
                     required
                     defaultValue={editingProduct?.stocks}
                   />
+                  {errors.stocks && <p className="text-red-500">{errors.stocks}</p>}
                 </div>
               </div>
 

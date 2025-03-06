@@ -62,7 +62,7 @@ export default async function Signup(props: {
             type="text"
             name="street"
             placeholder="(EX. 1234 EXAMPLE ST)"
-            minLength={6}
+            minLength={4}
             required
           />
           <Label htmlFor="city">City</Label>
@@ -70,7 +70,7 @@ export default async function Signup(props: {
             type="text"
             name="city"
             placeholder="(EX. IMUS CAVITE)"
-            minLength={6}
+            minLength={4}
             required
           />
           <Label htmlFor="province">Province</Label>
@@ -78,7 +78,7 @@ export default async function Signup(props: {
             type="text"
             name="province"
             placeholder="(EX. CAVITE)"
-            minLength={6}
+            minLength={4}
             required
           />
           <Label htmlFor="zip">Zip Code</Label>
