@@ -1,10 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation"; // usePathname and useRouter from 'next/navigation'
+import { createClient } from "@/utils/supabase/client";
 
 const AdminDashboard = () => {
   const pathname = usePathname();
   const navigate = useRouter();
+
+
 
   useEffect(() => {
     if (pathname === "/admin") {

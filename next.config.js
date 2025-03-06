@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  poweredByHeader: false,
   images: {
     domains: ["lugsovqbczuivdotdlnd.supabase.co"],
   },
@@ -22,6 +23,23 @@ const nextConfig = {
               form-action 'self';
             `.replace(/\s{2,}/g, " "), // Minify CSP
           },
+          {
+            key: "X-Frame-Options",
+            value: "DENY", // Prevent clickjacking attacks
+          },
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff", // Prevent MIME-type sniffing
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin", // Protect referrer info
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains; preload", // Enforce HTTPS
+          },
+
         ],
       },
     ];

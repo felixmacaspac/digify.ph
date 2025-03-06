@@ -527,7 +527,7 @@ export const signInAction = async (formData: FormData) => {
   }
 
 
-  return redirect("/admin");
+  return redirect("/");
 };
 
 // Fetch customer full name based on customer_id
