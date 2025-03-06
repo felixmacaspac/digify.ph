@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 
 export const createClient = async () => {
@@ -27,3 +28,18 @@ export const createClient = async () => {
     },
   );
 };
+
+export async function getUserRole() {
+  const supabase = createServerComponentClient({ cookies });
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session) return null;
+
+  const { data: userProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", session.user.id)
+    .single();
+
+  return userProfile?.role || "user";
+}

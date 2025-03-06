@@ -1,7 +1,16 @@
+import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
+  const cookieStore = await cookies();
+  const refreshToken = cookieStore.get("sb-refresh-token")?.value;
+
+  if (!refreshToken) {
+    return NextResponse.json({ error: "No refresh token" }, { status: 401 });
+  }
+
+
   // The `/auth/callback` route is required for the server-side auth flow implemented
   // by the SSR package. It exchanges an auth code for the user's session.
   // https://supabase.com/docs/guides/auth/server-side/nextjs
@@ -13,6 +22,22 @@ export async function GET(request: Request) {
   if (code) {
     const supabase = await createClient();
     await supabase.auth.exchangeCodeForSession(code);
+
+    const { data, error } = await supabase.auth.refreshSession({ refresh_token: refreshToken });
+
+    if (error) {
+      return NextResponse.json({ error: "Session expired, please log in again" }, { status: 401 });
+    }
+  
+    const response = new NextResponse(JSON.stringify({ message: "Token refreshed" }), { status: 200 });
+
+
+    response.headers.set(
+      "Set-Cookie",
+      `sb-access-token=${data.session?.access_token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=3600`
+    );
+
+    return response;
   }
 
   if (redirectTo) {

@@ -1,7 +1,8 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 
 const sidebarItems = [
   { id: "overview", label: "Overview", path: "/admin/overview" },
@@ -21,7 +22,6 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               <Link
                 key={item.id}
                 href={item.path}
-                passHref
                 className={`w-full text-left block py-4 px-10 uppercase transition-colors duration-300 ease-in-out ${
                   pathname === item.path
                     ? "bg-purple text-black"

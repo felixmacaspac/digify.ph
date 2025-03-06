@@ -1,5 +1,6 @@
 import ProductsCrud from "@/components/admin/products-crud";
 import { createClient } from "@/utils/supabase/server";
+import { requireAdmin } from "@/utils/protect";
 
 export default async function ProductsPage({
   searchParams,
@@ -7,6 +8,7 @@ export default async function ProductsPage({
   searchParams: { message?: string; type?: string };
 }) {
   const supabase = await createClient();
+  
 
   const { data: products, error } = await supabase.from("products").select("*");
 

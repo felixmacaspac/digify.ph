@@ -2,6 +2,7 @@ import { Mulish } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/header/menu";
 import Footer from "@/components/footer";
+import InactivityHandler from "@/components/InactivityHandler";
 
 const mulish = Mulish({
   subsets: ["latin"],
@@ -22,9 +23,14 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+
+
+
+
   return (
     <html lang="en" className={mulish.className} suppressHydrationWarning>
       <body>
+        <InactivityHandler/>
         <Header />
         {children}
         <Footer />
